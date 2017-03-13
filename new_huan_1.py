@@ -20,6 +20,7 @@ Mdb()
 s = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
     sheetSize=200.0)
 g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
+
 # 草绘圆环
 s.setPrimaryObject(option=STANDALONE)
 s.CircleByCenterPerimeter(center=(0.0, 0.0), point1=(51.25, 31.25))
@@ -28,11 +29,13 @@ s.RadialDimension(curve=g[2], textPoint=(-27.8459815979004, -22.1807708740234),
     radius=100.0)
 s.RadialDimension(curve=g[3], textPoint=(-20.812671661377, -29.010425567627), 
     radius=80.0)
+	
 # 建立模型1的部件1	
 p = mdb.models['Model-1'].Part(name='Part-1', dimensionality=THREE_D, 
     type=DEFORMABLE_BODY)
 p = mdb.models['Model-1'].parts['Part-1']
 p.BaseSolidExtrude(sketch=s, depth=4.0)
+
 s.unsetPrimaryObject()
 p = mdb.models['Model-1'].parts['Part-1']
 
@@ -91,7 +94,7 @@ del mdb.models['Model-1'].sketches['__profile__']
 import os
 os.chdir(r"F:\Projects\abaqus\huan")
 
-
+# 创建材料
 mdb.models['Model-1'].Material(name='Material-1')
 mdb.models['Model-1'].materials['Material-1'].Elastic(table=((210000000000.0, 
     0.27), ))
@@ -105,65 +108,62 @@ mdb.models['Model-1'].materials['Material-1'].Plastic(table=((218.11, 0.0), (
     1.0), (312.523, 1.1), (314.07, 1.2), (315.513, 1.3), (316.849, 1.4), (
     318.097, 1.5), (319.27, 1.6), (320.375, 1.7), (321.42, 1.8), (322.413, 
     1.9), (323.357, 2.0), (324.257, 2.1), (325.118, 2.2)))
+#创建实体截面
 mdb.models['Model-1'].HomogeneousSolidSection(name='Section-1', 
     material='Material-1', thickness=None)
+
 p = mdb.models['Model-1'].parts['Part-1']
 c = p.cells
 cells = c.getSequenceFromMask(mask=('[#1 ]', ), )
+
+#为部件分配截面属性
 region = p.Set(cells=cells, name='Set-1')
 p = mdb.models['Model-1'].parts['Part-1']
 p.SectionAssignment(region=region, sectionName='Section-1', offset=0.0, 
     offsetType=MIDDLE_SURFACE, offsetField='', 
     thicknessAssignment=FROM_SECTION)
-a = mdb.models['Model-1'].rootAssembly
 
+#创建部件实例	
+#a = mdb.models['Model-1'].rootAssembly
 a = mdb.models['Model-1'].rootAssembly
 a.DatumCsysByDefault(CARTESIAN)
 p = mdb.models['Model-1'].parts['Part-1']
 a.Instance(name='Part-1-1', part=p, dependent=ON)
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(
-    adaptiveMeshConstraints=ON)
+
+
+#创建分析步step-1、step-2、step-3、step-4，静力分析步的时间为1.0，初始增量为1
 mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial', 
     maxNumInc=10000, initialInc=1, maxInc=1, nlgeom=ON)
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Step-1')
+
 mdb.models['Model-1'].StaticStep(name='Step-2', previous='Step-1', 
     maxNumInc=10000, initialInc=1, maxInc=1)
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Step-2')
+
 mdb.models['Model-1'].StaticStep(name='Step-3', previous='Step-2', 
     maxNumInc=10000, initialInc=1, maxInc=1)
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Step-3')
+
 mdb.models['Model-1'].StaticStep(name='Step-4', previous='Step-3', 
     maxNumInc=10000, initialInc=1, maxInc=1)
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Step-4')
+
+#创建场输出，'S', 'PE', 'PEMAG', 'LE', 'U', 'UT', 'UR'
 mdb.models['Model-1'].fieldOutputRequests['F-Output-1'].setValues(variables=(
     'S', 'PE', 'PEMAG', 'LE', 'U', 'UT', 'UR'))
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(interactions=ON, 
-    constraints=ON, connectors=ON, engineeringFeatures=ON, 
-    adaptiveMeshConstraints=OFF)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=439.979, 
-    farPlane=723.235, width=160.584, height=72.7778, viewOffsetX=-1.39006, 
-    viewOffsetY=41.2563)
+
 a = mdb.models['Model-1'].rootAssembly
 e1 = a.instances['Part-1-1'].edges
+#创建查考点
 a.ReferencePoint(point=a.instances['Part-1-1'].InterestingPoint(edge=e1[0], 
-    rule=MIDDLE))
-session.viewports['Viewport: 1'].view.setValues(nearPlane=424.867, 
-    farPlane=738.347, width=289.08, height=131.013, viewOffsetX=-12.0771, 
-    viewOffsetY=22.8301)
+    rule=MIDDLE))	
 a = mdb.models['Model-1'].rootAssembly
 a.regenerate()
-session.viewports['Viewport: 1'].view.setValues(width=270.239, height=122.474, 
-    viewOffsetX=-7.65546, viewOffsetY=20.3933)
 a = mdb.models['Model-1'].rootAssembly
 e21 = a.instances['Part-1-1'].edges
+#创建查考点
 a.ReferencePoint(point=a.instances['Part-1-1'].InterestingPoint(edge=e21[6], 
     rule=MIDDLE))
-session.viewports['Viewport: 1'].view.setValues(nearPlane=454.706, 
-    farPlane=708.509, width=65.8707, height=29.853, viewOffsetX=-6.13231, 
-    viewOffsetY=57.2633)
 a = mdb.models['Model-1'].rootAssembly
 r1 = a.referencePoints
 refPoints1=(r1[4], )
+
 region1=a.Set(referencePoints=refPoints1, name='m_Set-1')
 a = mdb.models['Model-1'].rootAssembly
 e1 = a.instances['Part-1-1'].edges
@@ -172,25 +172,7 @@ region2=a.Set(edges=edges1, name='s_Set-1')
 mdb.models['Model-1'].Coupling(name='Constraint-1', controlPoint=region1, 
     surface=region2, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, 
     localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=450.185, 
-    farPlane=713.029, width=106.987, height=48.487, viewOffsetX=-7.11489, 
-    viewOffsetY=60.4985)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=431.034, 
-    farPlane=701.349, width=102.435, height=46.4244, cameraPosition=(549.141, 
-    136.386, -28.5646), cameraUpVector=(-0.525111, 0.524603, -0.670112), 
-    cameraTarget=(-15.5465, 7.22558, 23.5121), viewOffsetX=-6.81222, 
-    viewOffsetY=57.9249)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=426.301, 
-    farPlane=706.081, width=147.456, height=66.8279, viewOffsetX=-1.89782, 
-    viewOffsetY=60.0266)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=386.777, 
-    farPlane=670.722, width=133.784, height=60.632, cameraPosition=(504.452, 
-    -143.591, 71.2003), cameraUpVector=(-0.0611786, 0.905787, -0.419294), 
-    cameraTarget=(-54.5621, -4.05346, -8.16606), viewOffsetX=-1.72187, 
-    viewOffsetY=54.4613)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=393.724, 
-    farPlane=663.775, width=93.9517, height=42.5795, viewOffsetX=-3.28154, 
-    viewOffsetY=50.2272)
+
 a = mdb.models['Model-1'].rootAssembly
 r1 = a.referencePoints
 refPoints1=(r1[5], )
@@ -202,37 +184,8 @@ region2=a.Set(edges=edges1, name='s_Set-3')
 mdb.models['Model-1'].Coupling(name='Constraint-2', controlPoint=region1, 
     surface=region2, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, 
     localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
-session.viewports['Viewport: 1'].view.setValues(width=88.5046, height=40.1109, 
-    viewOffsetX=-3.42177, viewOffsetY=50.4504)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=408.197, 
-    farPlane=629.092, width=91.5609, height=41.496, cameraPosition=(414.821, 
-    -102.379, 296.623), cameraUpVector=(0.092377, 0.883042, -0.460113), 
-    cameraTarget=(-51.3147, -8.59354, -38.3217), viewOffsetX=-3.53994, 
-    viewOffsetY=52.1926)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=395.4, 
-    farPlane=641.889, width=186.356, height=84.4576, viewOffsetX=-8.2857, 
-    viewOffsetY=50.8192)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=427.056, 
-    farPlane=591.828, width=201.276, height=91.2194, cameraPosition=(249.15, 
-    -74.0435, 441.985), cameraUpVector=(-0.079331, 0.971206, -0.224645), 
-    cameraTarget=(-2.50141, -15.5084, -79.0828), viewOffsetX=-8.94907, 
-    viewOffsetY=54.8879)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=417.152, 
-    farPlane=601.732, width=267.894, height=121.411, viewOffsetX=-20.4148, 
-    viewOffsetY=51.6736)
-session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON, 
-    predefinedFields=ON, interactions=OFF, constraints=OFF, 
-    engineeringFeatures=OFF)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=420.963, 
-    farPlane=655.008, width=270.341, height=122.52, cameraPosition=(8.92982, 
-    364.598, 400.435), cameraUpVector=(0.0874765, 0.410574, -0.907622), 
-    cameraTarget=(33.649, -55.6397, -0.882633), viewOffsetX=-20.6013, 
-    viewOffsetY=52.1456)
-session.viewports['Viewport: 1'].view.setValues(nearPlane=440.071, 
-    farPlane=610.537, width=282.612, height=128.082, cameraPosition=(6.7359, 
-    171.071, 501.067), cameraUpVector=(0.104303, 0.733364, -0.671787), 
-    cameraTarget=(32.544, -57.5568, -33.0962), viewOffsetX=-21.5364, 
-    viewOffsetY=54.5126)
+	
+
 a = mdb.models['Model-1'].rootAssembly
 r1 = a.referencePoints
 refPoints1=(r1[4], )
