@@ -3,7 +3,6 @@
 # Abaqus/CAE Release 6.14-1 replay file
 # Internal Version: 2014_06_05-06.11.02 134264
 # Run by nasty on Mon Mar 13 08:54:44 2017
-#
 
 # from driverUtils import executeOnCaeGraphicsStartup
 # executeOnCaeGraphicsStartup()
@@ -13,6 +12,8 @@ from abaqusConstants import *
 from caeModules import *
 from driverUtils import executeOnCaeStartup
 executeOnCaeStartup()
+force_1=3000
+force_2=3000
 
 Mdb()
 #: A new model database has been created.
@@ -92,7 +93,7 @@ del mdb.models['Model-1'].sketches['__profile__']
 
 
 import os
-os.chdir(r"F:\Projects\abaqus\huan")
+#os.chdir(r"F:\Projects\abaqus\huan")
 
 # 创建材料
 mdb.models['Model-1'].Material(name='Material-1')
@@ -189,7 +190,7 @@ refPoints1=(r1[4], )
 #在圆环表面施加线载荷
 region = a.Set(referencePoints=refPoints1, name='Set-5')
 mdb.models['Model-1'].ConcentratedForce(name='Load-1', createStepName='Step-4', 
-    region=region, cf2=-800.0, distributionType=UNIFORM, field='', 
+    region=region, cf2=-force_1, distributionType=UNIFORM, field='', 
     localCsys=None)
 mdb.models['Model-1'].loads['Load-1'].move('Step-4', 'Step-3')
 mdb.models['Model-1'].loads['Load-1'].move('Step-3', 'Step-2')
@@ -200,7 +201,7 @@ r1 = a.referencePoints
 refPoints1=(r1[5], )
 region = a.Set(referencePoints=refPoints1, name='Set-6')
 mdb.models['Model-1'].ConcentratedForce(name='Load-2', createStepName='Step-4', 
-    region=region, cf1=-850.0, distributionType=UNIFORM, field='', 
+    region=region, cf1=-force_2, distributionType=UNIFORM, field='', 
     localCsys=None)
 mdb.models['Model-1'].loads['Load-2'].move('Step-4', 'Step-3')
 mdb.models['Model-1'].loads['Load-2'].deactivate('Step-4')
@@ -246,4 +247,19 @@ mdb.jobs['Job-1'].submit()
 mdb.jobs['Job-1'].waitForCompletion()
 #print'分析已经顺利完成，进行下一步处理'
 #后处理部分
-
+from odbAccess import *
+myodb=openOdb('Job-1.odb')
+mystep=myodb.steps
+step4=mystep['Step-4'].frames
+len1=len(step4)
+u1=step4[len1-1].fieldOutputs['U'].values
+len2=len(u1)
+add_u1=0
+for ui in range(len2):
+ u1x=u1[ui].data
+ add_u1x=0
+ for i in range(3):
+  u1y= u1x[i] 
+  add_u1x=add_u1x+abs(u1y)
+ add_u1=add_u1+add_u1x
+print(add_u1)
