@@ -12,14 +12,17 @@ from abaqusConstants import *
 from caeModules import *
 from driverUtils import executeOnCaeStartup
 executeOnCaeStartup()
-force_1=3000
-force_2=3000
+# 定义压扁力，单位N
+force_1=2000
+# 定义初始矫正力,单位N
+force_2=2000
+
 
 Mdb()
 #: A new model database has been created.
 #: The model "Model-1" has been created.
 s = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
-    sheetSize=200.0)
+	sheetSize=200.0)
 g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
 
 # 草绘圆环
@@ -27,13 +30,13 @@ s.setPrimaryObject(option=STANDALONE)
 s.CircleByCenterPerimeter(center=(0.0, 0.0), point1=(51.25, 31.25))
 s.CircleByCenterPerimeter(center=(0.0, 0.0), point1=(43.75, 20.0))
 s.RadialDimension(curve=g[2], textPoint=(-27.8459815979004, -22.1807708740234), 
-    radius=100.0)
+	radius=100.0)
 s.RadialDimension(curve=g[3], textPoint=(-20.812671661377, -29.010425567627), 
-    radius=80.0)
+	radius=80.0)
 	
 # 建立模型1的部件1	
 p = mdb.models['Model-1'].Part(name='Part-1', dimensionality=THREE_D, 
-    type=DEFORMABLE_BODY)
+	type=DEFORMABLE_BODY)
 p = mdb.models['Model-1'].parts['Part-1']
 p.BaseSolidExtrude(sketch=s, depth=4.0)
 
@@ -46,9 +49,9 @@ del mdb.models['Model-1'].sketches['__profile__']
 p = mdb.models['Model-1'].parts['Part-1']
 f, e, d1 = p.faces, p.edges, p.datums
 t = p.MakeSketchTransform(sketchPlane=f[2], sketchUpEdge=e[2], 
-    sketchPlaneSide=SIDE1, origin=(0.0, 0.0, 4.0))
+	sketchPlaneSide=SIDE1, origin=(0.0, 0.0, 4.0))
 s1 = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
-    sheetSize=565.2, gridSpacing=14.13, transform=t)
+	sheetSize=565.2, gridSpacing=14.13, transform=t)
 g, v, d, c = s1.geometry, s1.vertices, s1.dimensions, s1.constraints
 s1.setPrimaryObject(option=SUPERIMPOSE)
 p = mdb.models['Model-1'].parts['Part-1']
@@ -87,7 +90,7 @@ f = p.faces
 pickedFaces = f.getSequenceFromMask(mask=('[#1 ]', ), )
 f1, e1, d2 = p.faces, p.edges, p.datums
 p.PartitionFaceBySketchThruAll(sketchPlane=f1[2], sketchUpEdge=e1[2], 
-    faces=pickedFaces, sketchPlaneSide=SIDE1, sketch=s1)
+	faces=pickedFaces, sketchPlaneSide=SIDE1, sketch=s1)
 s1.unsetPrimaryObject()
 del mdb.models['Model-1'].sketches['__profile__']
 
@@ -97,21 +100,21 @@ import os
 
 # 创建材料
 mdb.models['Model-1'].Material(name='Material-1')
-mdb.models['Model-1'].materials['Material-1'].Elastic(table=((210000000000.0, 
-    0.27), ))
+mdb.models['Model-1'].materials['Material-1'].Elastic(table=((210000.0, 
+	0.27), ))
 mdb.models['Model-1'].materials['Material-1'].Plastic(table=((218.11, 0.0), (
-    218.113, 0.002), (226.903, 0.004), (232.208, 0.006), (236.047, 0.008), (
-    239.069, 0.01), (241.566, 0.012), (243.698, 0.014), (245.56, 0.016), (
-    247.214, 0.018), (248.703, 0.02), (258.726, 0.04), (264.775, 0.06), (
-    269.153, 0.08), (272.598, 0.1), (275.446, 0.12), (277.877, 0.14), (278.972, 
-    0.15), (283.584, 0.2), (290.214, 0.3), (295.012, 0.4), (298.789, 0.5), (
-    301.91, 0.6), (304.574, 0.7), (306.902, 0.8), (308.969, 0.9), (310.83, 
-    1.0), (312.523, 1.1), (314.07, 1.2), (315.513, 1.3), (316.849, 1.4), (
-    318.097, 1.5), (319.27, 1.6), (320.375, 1.7), (321.42, 1.8), (322.413, 
-    1.9), (323.357, 2.0), (324.257, 2.1), (325.118, 2.2)))
+	218.113, 0.002), (226.903, 0.004), (232.208, 0.006), (236.047, 0.008), (
+	239.069, 0.01), (241.566, 0.012), (243.698, 0.014), (245.56, 0.016), (
+	247.214, 0.018), (248.703, 0.02), (258.726, 0.04), (264.775, 0.06), (
+	269.153, 0.08), (272.598, 0.1), (275.446, 0.12), (277.877, 0.14), (278.972, 
+	0.15), (283.584, 0.2), (290.214, 0.3), (295.012, 0.4), (298.789, 0.5), (
+	301.91, 0.6), (304.574, 0.7), (306.902, 0.8), (308.969, 0.9), (310.83, 
+	1.0), (312.523, 1.1), (314.07, 1.2), (315.513, 1.3), (316.849, 1.4), (
+	318.097, 1.5), (319.27, 1.6), (320.375, 1.7), (321.42, 1.8), (322.413, 
+	1.9), (323.357, 2.0), (324.257, 2.1), (325.118, 2.2)))
 #创建实体截面
 mdb.models['Model-1'].HomogeneousSolidSection(name='Section-1', 
-    material='Material-1', thickness=None)
+	material='Material-1', thickness=None)
 
 p = mdb.models['Model-1'].parts['Part-1']
 c = p.cells
@@ -121,8 +124,8 @@ cells = c.getSequenceFromMask(mask=('[#1 ]', ), )
 region = p.Set(cells=cells, name='Set-1')
 p = mdb.models['Model-1'].parts['Part-1']
 p.SectionAssignment(region=region, sectionName='Section-1', offset=0.0, 
-    offsetType=MIDDLE_SURFACE, offsetField='', 
-    thicknessAssignment=FROM_SECTION)
+	offsetType=MIDDLE_SURFACE, offsetField='', 
+	thicknessAssignment=FROM_SECTION)
 
 #创建部件实例	
 #a = mdb.models['Model-1'].rootAssembly
@@ -133,31 +136,33 @@ a.Instance(name='Part-1-1', part=p, dependent=ON)
 
 
 #创建分析步step-1、step-2、step-3、step-4，静力分析步的时间为1.0，初始增量为1
+initialInc1=0.01
+maxInc1=0.05
 mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial', 
-    maxNumInc=10000, initialInc=1, maxInc=1, nlgeom=ON)
+	maxNumInc=1000000, initialInc=initialInc1, maxInc=maxInc1, nlgeom=ON)
 mdb.models['Model-1'].StaticStep(name='Step-2', previous='Step-1', 
-    maxNumInc=10000, initialInc=1, maxInc=1)
+	maxNumInc=1000000, initialInc=initialInc1, maxInc=maxInc1)
 mdb.models['Model-1'].StaticStep(name='Step-3', previous='Step-2', 
-    maxNumInc=10000, initialInc=1, maxInc=1)
+	maxNumInc=1000000, initialInc=initialInc1, maxInc=maxInc1)
 mdb.models['Model-1'].StaticStep(name='Step-4', previous='Step-3', 
-    maxNumInc=10000, initialInc=1, maxInc=1)
+	maxNumInc=1000000, initialInc=initialInc1, maxInc=maxInc1)
 
 #创建场输出，'S', 'PE', 'PEMAG', 'LE', 'U', 'UT', 'UR'
 mdb.models['Model-1'].fieldOutputRequests['F-Output-1'].setValues(variables=(
-    'S', 'PE', 'PEMAG', 'LE', 'U', 'UT', 'UR'))
+	'S', 'PE', 'PEMAG', 'LE', 'U', 'UT', 'UR'))
 
 a = mdb.models['Model-1'].rootAssembly
 e1 = a.instances['Part-1-1'].edges
 #创建查考点，添加耦合约束
 a.ReferencePoint(point=a.instances['Part-1-1'].InterestingPoint(edge=e1[0], 
-    rule=MIDDLE))	
+	rule=MIDDLE))	
 a = mdb.models['Model-1'].rootAssembly
 a.regenerate()
 a = mdb.models['Model-1'].rootAssembly
 e21 = a.instances['Part-1-1'].edges
 #创建查考点，添加耦合约束
 a.ReferencePoint(point=a.instances['Part-1-1'].InterestingPoint(edge=e21[6], 
-    rule=MIDDLE))
+	rule=MIDDLE))
 a = mdb.models['Model-1'].rootAssembly
 r1 = a.referencePoints
 refPoints1=(r1[4], )
@@ -168,8 +173,8 @@ e1 = a.instances['Part-1-1'].edges
 edges1 = e1.getSequenceFromMask(mask=('[#1 ]', ), )
 region2=a.Set(edges=edges1, name='s_Set-1')
 mdb.models['Model-1'].Coupling(name='Constraint-1', controlPoint=region1, 
-    surface=region2, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, 
-    localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+	surface=region2, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, 
+	localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
 
 a = mdb.models['Model-1'].rootAssembly
 r1 = a.referencePoints
@@ -180,8 +185,8 @@ e1 = a.instances['Part-1-1'].edges
 edges1 = e1.getSequenceFromMask(mask=('[#40 ]', ), )
 region2=a.Set(edges=edges1, name='s_Set-3')
 mdb.models['Model-1'].Coupling(name='Constraint-2', controlPoint=region1, 
-    surface=region2, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, 
-    localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+	surface=region2, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, 
+	localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
 	
 a = mdb.models['Model-1'].rootAssembly
 r1 = a.referencePoints
@@ -190,8 +195,8 @@ refPoints1=(r1[4], )
 #在圆环表面施加线载荷
 region = a.Set(referencePoints=refPoints1, name='Set-5')
 mdb.models['Model-1'].ConcentratedForce(name='Load-1', createStepName='Step-4', 
-    region=region, cf2=-force_1, distributionType=UNIFORM, field='', 
-    localCsys=None)
+	region=region, cf2=-force_1, distributionType=UNIFORM, field='', 
+	localCsys=None)
 mdb.models['Model-1'].loads['Load-1'].move('Step-4', 'Step-3')
 mdb.models['Model-1'].loads['Load-1'].move('Step-3', 'Step-2')
 mdb.models['Model-1'].loads['Load-1'].move('Step-2', 'Step-1')
@@ -201,8 +206,8 @@ r1 = a.referencePoints
 refPoints1=(r1[5], )
 region = a.Set(referencePoints=refPoints1, name='Set-6')
 mdb.models['Model-1'].ConcentratedForce(name='Load-2', createStepName='Step-4', 
-    region=region, cf1=-force_2, distributionType=UNIFORM, field='', 
-    localCsys=None)
+	region=region, cf1=-force_2, distributionType=UNIFORM, field='', 
+	localCsys=None)
 mdb.models['Model-1'].loads['Load-2'].move('Step-4', 'Step-3')
 mdb.models['Model-1'].loads['Load-2'].deactivate('Step-4')
 a = mdb.models['Model-1'].rootAssembly
@@ -210,7 +215,7 @@ e1 = a.instances['Part-1-1'].edges
 edges1 = e1.getSequenceFromMask(mask=('[#200 ]', ), )
 region = a.Set(edges=edges1, name='Set-7')
 mdb.models['Model-1'].EncastreBC(name='BC-1', createStepName='Step-4', 
-    region=region, localCsys=None)
+	region=region, localCsys=None)
 mdb.models['Model-1'].boundaryConditions['BC-1'].move('Step-4', 'Step-3')
 mdb.models['Model-1'].boundaryConditions['BC-1'].move('Step-3', 'Step-2')
 mdb.models['Model-1'].boundaryConditions['BC-1'].move('Step-2', 'Step-1')
@@ -221,7 +226,7 @@ e1 = a.instances['Part-1-1'].edges
 edges1 = e1.getSequenceFromMask(mask=('[#4 ]', ), )
 region = a.Set(edges=edges1, name='Set-8')
 mdb.models['Model-1'].EncastreBC(name='BC-2', createStepName='Step-4', 
-    region=region, localCsys=None)
+	region=region, localCsys=None)
 mdb.models['Model-1'].boundaryConditions['BC-2'].move('Step-4', 'Step-3')
 mdb.models['Model-1'].boundaryConditions['BC-2'].deactivate('Step-4')
 p = mdb.models['Model-1'].parts['Part-1']
@@ -236,12 +241,12 @@ a = mdb.models['Model-1'].rootAssembly
 
 # 为模型创建分析作业
 mdb.Job(name='Job-1', model='Model-1', description='', type=ANALYSIS, 
-    atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90, 
-    memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
-    explicitPrecision=SINGLE, nodalOutputPrecision=SINGLE, echoPrint=OFF, 
-    modelPrint=OFF, contactPrint=OFF, historyPrint=OFF, userSubroutine='', 
-    scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=4, 
-    numDomains=4, numGPUs=1)
+	atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90, 
+	memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
+	explicitPrecision=SINGLE, nodalOutputPrecision=SINGLE, echoPrint=OFF, 
+	modelPrint=OFF, contactPrint=OFF, historyPrint=OFF, userSubroutine='', 
+	scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=4, 
+	numDomains=4, numGPUs=1)
 #等待分析作业完成	
 mdb.jobs['Job-1'].submit()
 mdb.jobs['Job-1'].waitForCompletion()
